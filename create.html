@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>إنشاء حساب · OMAR-HOST</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+    :root{
+      --bg:#060812;
+      --glass:rgba(255,255,255,.07);
+      --b:rgba(255,255,255,.14);
+      --t:rgba(255,255,255,.92);
+      --m:rgba(255,255,255,.65);
+      --a:#00d4ff;
+      --a2:#7b61ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      color:var(--t);
+      font-family:'Cairo',system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(900px 500px at 10% 10%,rgba(0,212,255,.22),transparent 60%),
+        radial-gradient(800px 500px at 90% 20%,rgba(123,97,255,.18),transparent 55%),
+        linear-gradient(180deg,#070a12,#05060a);
+      padding:20px;
+    }
+    .card{
+      width:min(460px,94vw);
+      border:1px solid var(--b);
+      background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));
+      border-radius:20px;
+      backdrop-filter:blur(16px);
+      box-shadow:0 18px 60px rgba(0,0,0,.55);
+      padding:24px;
+    }
+    .title{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px}
+    .logo{
+      width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+      background:radial-gradient(circle at 30% 30%,rgba(0,212,255,.9),transparent 60%),
+               radial-gradient(circle at 70% 70%,rgba(123,97,255,.7),transparent 55%),
+               rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .sub{margin-top:8px;color:var(--m);font-size:12.5px;line-height:1.6}
+    input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.35);
+      color:var(--t);
+      outline:none;
+      margin-top:11px;
+      font-family:'Cairo',sans-serif;
+      font-size:13.5px;
+    }
+    input:focus{
+      border-color:rgba(0,212,255,.55);
+      box-shadow:0 0 0 3px rgba(0,212,255,.12);
+    }
+    .row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+    .btn{
+      flex:1;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--t);
+      font-weight:800;
+      font-family:'Cairo',sans-serif;
+      cursor:pointer;
+      transition:.15s;
+    }
+    .btn:hover{background:rgba(255,255,255,.12)}
+    .btn.primary{
+      border:0;
+      color:#00131c;
+      font-weight:900;
+      background:linear-gradient(135deg,rgba(0,212,255,.95),rgba(123,97,255,.85));
+    }
+    .msg{margin-top:12px;color:var(--m);font-size:12.5px;font-weight:700;min-height:18px;text-align:center}
+    a{color:var(--a);text-decoration:none;font-weight:800}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title"><div class="logo">✨</div> إنشاء حساب جديد</div>
+    <div class="sub">المستخدم العادي يحصل على سيرفر مجاني واحد. لزيادة الحد تواصل على تيليجرام <a href="https://t.me/oivxm" target="_blank" rel="noopener noreferrer">@oivxm</a></div>
+
+    <input id="u" placeholder="اسم المستخدم (أحرف / أرقام / _ / .)" autocomplete="username">
+    <input id="e" placeholder="البريد الإلكتروني" type="email" autocomplete="email">
+    <input id="p" placeholder="كلمة المرور (6 أحرف فأكثر)" type="password" autocomplete="new-password">
+    <input id="p2" placeholder="إعادة إدخال كلمة المرور" type="password" autocomplete="new-password">
+
+    <div class="row">
+      <button class="btn primary" type="button" onclick="doCreate()">إنشاء الحساب</button>
+      <button class="btn" type="button" onclick="location.href='/login'">العودة للدخول</button>
+    </div>
+
+    <div class="msg" id="m"></div>
+  </div>
+
+<script>
+async function doCreate(){
+  const m = document.getElementById("m");
+  m.textContent = "جاري إنشاء الحساب...";
+  const username = document.getElementById("u").value.trim();
+  const email = document.getElementById("e").value.trim();
+  const password = document.getElementById("p").value;
+  const password2 = document.getElementById("p2").value;
+
+  try{
+    const r = await fetch("/api/auth/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, password, password2 })
+    });
+    const d = await r.json().catch(() => ({ success: false, message: "خطأ في الخادم" }));
+    if(!r.ok || !d.success){
+      m.style.color = "#ff9999";
+      m.textContent = d.message || "تعذر إنشاء الحساب";
+      return;
+    }
+    m.style.color = "#7CFF7C";
+    m.textContent = "تم إنشاء الحساب ✅ جاري التحويل إلى صفحة الدخول...";
+    setTimeout(() => { location.href = "/login"; }, 800);
+  }catch(_e){
+    m.style.color = "#ff9999";
+    m.textContent = "خطأ في الاتصال بالخادم";
+  }
+}
+</script>
+</body>
+</html>
